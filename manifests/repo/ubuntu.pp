@@ -20,6 +20,13 @@ class php::repo::ubuntu (
     fail('Only one of $oldstable and $ppa can be specified.')
   }
 
+  # Ensure apt_update happens at the appropriate time
+  ::Apt::Ppa <| title == "ppa:${release}"
+                      or title == 'ppa:ondrej/php5-oldstable'
+                      or title == 'ppa:ondrej/php5' |> ->
+  Class['::apt::update'] ->
+  Anchor['php::begin']
+
   if ($ppa) {
     ::apt::ppa { "ppa:${ppa}": }
   } elsif ($::lsbdistcodename == 'precise' or $oldstable == true) {

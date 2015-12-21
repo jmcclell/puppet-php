@@ -42,6 +42,13 @@ class php::repo::debian(
     key => $key['id'], key_source => $key['source'],
   }})
 
+  # Ensure apt_update happens at the appropriate time
+  ::Apt::Source <| title == "source_php_${release}"
+                         or title == 'dotdeb-wheezy' |> ->
+  Class['::apt::update'] ->
+  Anchor['php::begin']
+
+
   ::apt::source { "source_php_${release}":
     location    => $location,
     release     => $release,
@@ -49,6 +56,7 @@ class php::repo::debian(
     include_src => $include_src,
     require     => Apt::Key['php::repo::debian'],
   }
+
 
   if ($dotdeb) {
     # wheezy-php55 requires both repositories to work correctly
